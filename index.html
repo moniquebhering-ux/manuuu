@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onde vamos hoje?</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <!-- Fontes do Google (Playfair Display para o título e Plus Jakarta Sans para o texto) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            title: ['"Playfair Display"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            romantic: {
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              200: '#fecdd3',
+              300: '#fda4af',
+              400: '#fb7185',
+              500: '#e11d48',
+              600: '#be123c',
+              700: '#9f1239',
+              800: '#881337',
+              900: '#4c0519',
+              dark: '#2c030d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilos personalizados para gradiente em vermelho escuro e sofisticação */
+    body {
+      background: linear-gradient(135deg, #4c0519 0%, #881337 50%, #500724 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .glass-card {
+      background: rgba(44, 3, 13, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(253, 164, 175, 0.25);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .heart-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .floating-heart {
+      position: absolute;
+      color: rgba(253, 164, 175, 0.15);
+      animation: float 8s infinite linear;
+      bottom: -10%;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg) scale(0.8);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(-110vh) rotate(360deg) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    /* Ponteiro da Roleta */
+    .wheel-pointer {
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 30px solid #fb7185;
+      filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.5));
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-100 antialiased relative selection:bg-romantic-600 selection:text-white">
+
+  <!-- Fundo com Corações Flutuantes -->
+  <div class="heart-bg" id="heartContainer"></div>
+
+  <!-- Container Principal -->
+  <main class="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 my-auto">
+    
+    <!-- TELA 1: Seleção de Refeição -->
+    <section id="screenSelection" class="w-full max-w-md text-center transition-all duration-500 transform">
+      <div class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+        
+        <div class="space-y-2">
+          <h1 class="font-title text-4xl sm:text-5xl text-romantic-200 leading-tight pt-2 font-bold drop-shadow-md">
+            Onde vamos hoje? 
+          </h1>
+        </div>
+
+        <!-- Botões de Categoria -->
+        <div class="space-y-4 pt-2">
+          
+          <button onclick="selectMeal('cafe')" class="group relative w-full p-4 bg-romantic-900/80 hover:bg-romantic-800 border-2 border-romantic-700/50 hover:border-romantic-400 rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-between overflow-hidden">
+            <div class="flex items-center space-x-4">
+              <span class="text-3xl p-2 bg-romantic-800 rounded-xl group-hover:scale-110 transition-transform">☕</span>
+              <div class="text-left">
+                <h3 class="font-bold text-white text-lg group-hover:text-romantic-200">Cafézinho Superfaturado</h3>
+              </div>
+            </div>
+            <span class="text-romantic-400 group-hover:translate-x-1 transition-transform">➔</span>
+          </button>
+
+          <button onclick="selectMeal('almoco')" class="group relative w-full p-4 bg-romantic-900/80 hover:bg-romantic-800 border-2 border-romantic-700/50 hover:border-romantic-400 rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-between overflow-hidden">
+            <div class="flex items-center space-x-4">
+              <span class="text-3xl p-2 bg-romantic-800 rounded-xl group-hover:scale-110 transition-transform">🍝</span>
+              <div class="text-left">
+                <h3 class="font-bold text-white text-lg group-hover:text-romantic-200">Almoço</h3>
+              </div>
+            </div>
+            <span class="text-romantic-400 group-hover:translate-x-1 transition-transform">➔</span>
+          </button>
+
+          <button onclick="selectMeal('jantar')" class="group relative w-full p-4 bg-romantic-900/80 hover:bg-romantic-800 border-2 border-romantic-700/50 hover:border-romantic-400 rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-between overflow-hidden">
+            <div class="flex items-center space-x-4">
+              <span class="text-3xl p-2 bg-romantic-800 rounded-xl group-hover:scale-110 transition-transform">🍷</span>
+              <div class="text-left">
+                <h3 class="font-bold text-white text-lg group-hover:text-romantic-200">Jantar</h3>
+              </div>
+            </div>
+            <span class="text-romantic-400 group-hover:translate-x-1 transition-transform">➔</span>
+          </button>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TELA 2: Roleta de Opções -->
+    <section id="screenWheel" class="hidden w-full max-w-md text-center transition-all duration-500 transform">
+      <div class="glass-card rounded-3xl p-6 sm:p-8 space-y-6 relative">
+        
+        <!-- Cabeçalho da Roleta -->
+        <div class="space-y-1">
+          <button onclick="goToSelection()" class="text-xs text-romantic-300 hover:text-white font-semibold flex items-center justify-center gap-1 mx-auto mb-2 transition-colors">
+            ← Trocar refeição
+          </button>
+          <h2 id="mealTitle" class="font-title text-3xl sm:text-4xl text-romantic-200 font-bold drop-shadow-md">
+            Opções de Café
+          </h2>
+        </div>
+
+        <!-- Container da Roleta -->
+        <div class="relative flex flex-col items-center justify-center my-4">
+          <!-- Ponteiro da Roleta -->
+          <div class="wheel-pointer z-20 -mb-3"></div>
+          
+          <!-- Canvas da Roleta -->
+          <div class="relative p-2 bg-romantic-900 rounded-full shadow-2xl border-4 border-romantic-600">
+            <canvas id="wheelCanvas" width="300" height="300" class="rounded-full cursor-pointer max-w-full h-auto"></canvas>
+            <!-- Centro da Roleta -->
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-romantic-900 rounded-full border-4 border-romantic-400 shadow-lg flex items-center justify-center z-10">
+              <span class="text-xs">💖</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão Girar -->
+        <div class="space-y-3">
+          <button id="spinBtn" onclick="spinWheel()" class="w-full py-4 px-6 bg-gradient-to-r from-romantic-500 to-romantic-600 hover:from-romantic-600 hover:to-romantic-700 text-white font-bold text-lg rounded-2xl shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 border border-romantic-400/30">
+            <span>Girar Roleta!</span>
+            <span class="text-xl">🎲</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE RESULTADO -->
+  <div id="resultModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-romantic-950 border border-romantic-700/50 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl transform scale-90 transition-transform duration-300 space-y-5 text-gray-100" id="modalCard">
+      
+      <div class="w-16 h-16 bg-romantic-900 border border-romantic-600 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce shadow-lg">
+        🎉
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-sm font-bold text-romantic-300 tracking-wider uppercase">O Destino Escolheu!</h3>
+        <p id="resultText" class="font-title text-3xl sm:text-4xl font-extrabold text-white leading-tight drop-shadow">
+          Pizza! 🍕
+        </p>
+      </div>
+
+      <div class="pt-2 space-y-2">
+        <button onclick="closeModal()" class="w-full py-3 bg-romantic-600 hover:bg-romantic-700 text-white font-bold rounded-xl shadow-lg transition-colors border border-romantic-500/30">
+          Perfeito, Amei! 🥰
+        </button>
+        <button onclick="closeModalAndSpinAgain()" class="w-full py-2 bg-transparent hover:bg-romantic-900/50 text-romantic-300 text-sm font-semibold rounded-xl transition-colors">
+          Girar Novamente 🎲
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT PRINCIPAL -->
+  <script>
+    const MEAL_OPTIONS = {
+      cafe: {
+        title: 'Cafézinho Superfaturado',
+        items: [
+          'Meguro',
+          'Emma',
+          'Royalty',
+          'Suspiro',
+          'Você que sabe'
+        ],
+        // Cores escuras e contrastantes (sem tons claros)
+        colors: ['#7f1d1d', '#991b1b', '#b91c1c', '#dc2626', '#9f1239']
+      },
+      almoco: {
+        title: 'Almoço',
+        items: [
+          'Jardim do Bosque',
+          'Cantina do Délio',
+          'Italiano',
+          'Não sei',
+          'Não sei',
+          'Qualquer coisa'
+        ],
+        // Cores escuras e fechadas substituindo os roxos claros
+        colors: ['#581c87', '#6b21a8', '#7e22ce', '#86198f', '#701a75', '#4a044e']
+      },
+      jantar: {
+        title: 'Jantar',
+        items: [
+          'Doppo Cucina',
+          'Nuunikkei',
+          'Zefy',
+          'A Sacristia',
+          'Carlo',
+          'Não sei'
+        ],
+        // Cores escuras e fechadas para alta legibilidade
+        colors: ['#4c0519', '#701a75', '#881337', '#9f1239', '#831843', '#500724']
+      }
+    };
+
+    let currentMeal = 'cafe';
+    let startAngle = 0;
+    let currentAngle = 0;
+    let isSpinning = false;
+    let spinTimeout = null;
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const center = canvas.width / 2;
+    const radius = center - 10;
+
+    window.onload = function() {
+      createFloatingHearts();
+    };
+
+    function createFloatingHearts() {
+      const container = document.getElementById('heartContainer');
+      const heartIcons = ['❤️', '💖', '💕', '💗', '🌸'];
+      
+      for (let i = 0; i < 15; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'floating-heart';
+        heart.innerText = heartIcons[Math.floor(Math.random() * heartIcons.length)];
+        heart.style.left = `${Math.random() * 100}%`;
+        heart.style.animationDuration = `${6 + Math.random() * 6}s`;
+        heart.style.animationDelay = `${Math.random() * 5}s`;
+        heart.style.fontSize = `${16 + Math.random() * 20}px`;
+        container.appendChild(heart);
+      }
+    }
+
+    function selectMeal(mealType) {
+      currentMeal = mealType;
+      document.getElementById('mealTitle').innerText = MEAL_OPTIONS[mealType].title;
+      
+      document.getElementById('screenSelection').classList.add('hidden');
+      document.getElementById('screenWheel').classList.remove('hidden');
+
+      startAngle = 0;
+      drawWheel();
+    }
+
+    function goToSelection() {
+      if (isSpinning) return;
+      document.getElementById('screenWheel').classList.add('hidden');
+      document.getElementById('screenSelection').classList.remove('hidden');
+    }
+
+    function drawWheel() {
+      const items = MEAL_OPTIONS[currentMeal].items;
+      const colors = MEAL_OPTIONS[currentMeal].colors;
+      const numOptions = items.length;
+      const arcSize = (2 * Math.PI) / numOptions;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < numOptions; i++) {
+        const angle = startAngle + i * arcSize;
+
+        ctx.beginPath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, angle, angle + arcSize, false);
+        ctx.lineTo(center, center);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
+        ctx.translate(
+          center + Math.cos(angle + arcSize / 2) * (radius * 0.65),
+          center + Math.sin(angle + arcSize / 2) * (radius * 0.65)
+        );
+        ctx.rotate(angle + arcSize / 2 + Math.PI / 2);
+        
+        const text = items[i];
+        ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+        ctx.restore();
+      }
+    }
+
+    function spinWheel() {
+      if (isSpinning) return;
+
+      isSpinning = true;
+      document.getElementById('spinBtn').disabled = true;
+      document.getElementById('spinBtn').classList.add('opacity-50', 'cursor-not-allowed');
+
+      const spinAngleStart = Math.random() * 10 + 10;
+      let spinTime = 0;
+      const spinTimeTotal = Math.random() * 3000 + 4000;
+
+      function rotate() {
+        spinTime += 30;
+        if (spinTime >= spinTimeTotal) {
+          stopRotate();
+          return;
+        }
+
+        const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+        startAngle += (spinAngle * Math.PI) / 180;
+        drawWheel();
+        spinTimeout = requestAnimationFrame(rotate);
+      }
+
+      rotate();
+    }
+
+    function easeOut(t, b, c, d) {
+      const ts = (t /= d) * t;
+      const tc = ts * t;
+      return b + c * (tc + -3 * ts + 3 * t);
+    }
+
+    function stopRotate() {
+      cancelAnimationFrame(spinTimeout);
+      isSpinning = false;
+
+      document.getElementById('spinBtn').disabled = false;
+      document.getElementById('spinBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+
+      const items = MEAL_OPTIONS[currentMeal].items;
+      const numOptions = items.length;
+      const arcSize = (2 * Math.PI) / numOptions;
+
+      let degrees = (startAngle * 180) / Math.PI + 90;
+      let arcd = (arcSize * 180) / Math.PI;
+      let index = Math.floor((360 - (degrees % 360)) / arcd);
+      index = (index + numOptions) % numOptions;
+
+      const winningItem = items[index];
+
+      setTimeout(() => {
+        showResultModal(winningItem);
+        triggerConfetti();
+      }, 300);
+    }
+
+    function showResultModal(item) {
+      const modal = document.getElementById('resultModal');
+      const modalCard = document.getElementById('modalCard');
+      const resultText = document.getElementById('resultText');
+
+      resultText.innerText = item;
+      
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modalCard.classList.remove('scale-90');
+      modalCard.classList.add('scale-100');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('resultModal');
+      const modalCard = document.getElementById('modalCard');
+
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modalCard.classList.remove('scale-100');
+      modalCard.classList.add('scale-90');
+    }
+
+    function closeModalAndSpinAgain() {
+      closeModal();
+      setTimeout(() => {
+        spinWheel();
+      }, 300);
+    }
+
+    function triggerConfetti() {
+      var count = 200;
+      var defaults = {
+        origin: { y: 0.7 }
+      };
+
+      function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+          particleCount: Math.floor(count * particleRatio)
+        }));
+      }
+
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
+        colors: ['#e11d48', '#fb7185', '#ffffff']
+      });
+      fire(0.2, {
+        spread: 60,
+        colors: ['#fda4af', '#be123c']
+      });
+      fire(0.35, {
+        spread: 100,
+        decay: 0.91,
+        scalar: 0.8
+      });
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 25,
+        decay: 0.92,
+        colors: ['#ffe4e6', '#e11d48']
+      });
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 45,
+      });
+    }
+  </script>
+</body>
+</html>
